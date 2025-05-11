@@ -4,7 +4,8 @@ FROM python:3.10-slim
 # Set environment variables
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    CARGO_HOME=/root/.cargo
+    CARGO_HOME=/root/.cargo \
+    PORT=10000
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -38,11 +39,12 @@ RUN python -m nltk.downloader punkt
 # Copy the rest of the application
 COPY . .
 
-# Create uploads directory
-RUN mkdir -p uploads && chmod 777 uploads
+# Create necessary directories
+RUN mkdir -p backened/uploads backened/models backened/static && \
+    chmod -R 777 backened/uploads backened/models backened/static
 
 # Expose port
-EXPOSE 8000
+EXPOSE 10000
 
 # Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "backened.check:app"] 
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "backened.check:app"] 
