@@ -5,7 +5,8 @@ FROM python:3.10-slim
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
     CARGO_HOME=/root/.cargo \
-    PORT=10000
+    PORT=10000 \
+    PYTHONPATH=/app
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -47,4 +48,4 @@ RUN mkdir -p backened/uploads backened/models backened/static && \
 EXPOSE 10000
 
 # Command to run the application
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "backened.check:app"] 
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--workers", "1", "--timeout", "120", "backened.check:app"] 
