@@ -30,7 +30,11 @@ app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
 ALLOWED_EXTENSIONS = {'pdf'}
 
 # ========== SETUP ========== 
-nltk.download('punkt', quiet=True)
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt', quiet=True)
+
 warnings.filterwarnings("ignore", category=InconsistentVersionWarning)
 
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -192,12 +196,24 @@ def predict():
         print(f"Error in prediction: {e}")
         return jsonify({"error": "Failed to make prediction. Please try again."}), 500
 
-# ========== SERVE REACT BUILD ========== 
+# ========== FRONTEND ROUTES ==========
 @app.route('/')
-@app.route('/<path:path>')
-def serve_react(path='index.html'):
-    return send_from_directory(app.static_folder, path)
+def serve_index():
+    return send_from_directory(app.static_folder, 'index.html')
 
+@app.route('/<path:path>')
+def serve_static(path):
+    if os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    return send_from_directory(app.static_folder, 'index.html')
+
+# Catch-all route for frontend routes
+@app.route('/chatbot')
+@app.route('/summarization')
+@app.route('/prediction')
+@app.route('/about')
+def serve_frontend():
+    return send_from_directory(app.static_folder, 'index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=port)
